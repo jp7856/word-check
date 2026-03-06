@@ -1,3 +1,4 @@
+
 const uploadInput = document.getElementById('upload-input');
 const imagePreview = document.getElementById('image-preview');
 const recognizeBtn = document.getElementById('recognize-btn');
@@ -36,27 +37,36 @@ recognizeBtn.addEventListener('click', () => {
             }
         ).then(({ data }) => {
             extractedWords = []; // Reset words list
-            // Process lines to find the first English word in each
+            
+            // Process each line of text recognized by the OCR
             data.lines.forEach(line => {
-                // Split the line into words
-                const words = line.text.trim().split(/\s+/);
-                if (words.length > 0) {
-                    const firstWord = words[0];
-                    // Check if the first word contains only English letters
-                    if (/^[a-zA-Z]+$/.test(firstWord)) {
-                        extractedWords.push(firstWord);
+                // Split the line into individual words
+                const wordsInLine = line.text.trim().split(/\s+/);
+                
+                // Find the first valid English word (3+ letters) in the line
+                for (const word of wordsInLine) {
+                    // Remove any non-alphabetic characters from the word
+                    const cleanWord = word.replace(/[^a-zA-Z]/g, '');
+                    
+                    if (cleanWord.length >= 3) {
+                        extractedWords.push(cleanWord);
+                        break; // Found the word, move to the next line
                     }
                 }
             });
 
             if (extractedWords.length > 0) {
+                // Remove any duplicate words to ensure a clean list
+                extractedWords = [...new Set(extractedWords)];
                 textResult.textContent = "Extracted Words: \n" + extractedWords.join(', ');
             } else {
-                textResult.textContent = data.text; // Fallback to full text
+                // If no words were extracted, show the full text as a fallback
+                textResult.textContent = "Could not extract valid words. Full text: \n" + data.text; 
             }
         });
     }
 });
+
 
 // Speak the extracted words 5 times each
 speakBtn.addEventListener('click', () => {
@@ -65,7 +75,6 @@ speakBtn.addEventListener('click', () => {
     }
 
     if (extractedWords.length > 0) {
-        // Create a sequence of utterances
         const utterances = [];
         extractedWords.forEach(word => {
             for (let i = 0; i < 5; i++) {
@@ -78,15 +87,13 @@ speakBtn.addEventListener('click', () => {
         const speakNext = () => {
             if (utterances.length > 0) {
                 const utterance = utterances.shift();
-                utterance.onend = speakNext; // When one finishes, speak the next
+                utterance.onend = speakNext; 
                 speechSynthesis.speak(utterance);
-            }
+            } 
         };
-
         speakNext();
 
     } else {
-        // Fallback for cases where no words were extracted
         const text = textResult.textContent;
         if (text && text !== 'Recognizing...') {
             const utterance = new SpeechSynthesisUtterance(text);

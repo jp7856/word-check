@@ -7,43 +7,33 @@ This application allows users to **upload a photo**, recognizes English words wi
 
 ## Implemented Features
 
+### Version 3 (Improved Word Extraction)
+- **UI/UX:** No changes.
+- **Functionality:**
+  - **Enhanced OCR Logic:** The OCR process now intelligently extracts words. Instead of grabbing the first word of every line, it specifically looks for the first valid English word of at least 3 characters in length.
+  - **Duplicate Removal:** The final list of extracted words is de-duplicated to provide a clean vocabulary list.
+  - **TTS Repetition:** The "Speak" button now iterates through the clean list of extracted words, speaking each one 5 times consecutively.
+
 ### Version 2 (File Upload)
 - **UI/UX:**
-  - A clean, modern interface with a title and a main content area.
-  - An "Upload Image" button for users to select a photo from their device.
-  - A preview area to display the uploaded image.
-  - A "Recognize Text" button to start the OCR process.
-  - An area to display the recognized text.
-  - A "Speak" button to trigger the TTS.
+  - An "Upload Image" button and a preview area.
 - **Functionality:**
-  - **Image Upload:** Users can select an image file (e.g., PNG, JPG) from their computer or mobile device.
-  - **Image Preview:** The selected image is displayed on the screen.
-  - **Text Recognition (OCR):** It uses Tesseract.js to perform Optical Character Recognition on the uploaded image to identify English text.
-  - **Text-to-Speech (TTS):** It uses the browser's built-in Web Speech API (`SpeechSynthesis`) to convert the recognized text into speech.
+  - **Image Upload:** Users can select an image file from their device.
+  - **Text Recognition (OCR):** Uses Tesseract.js with `eng+kor` to identify text.
+  - **Text-to-Speech (TTS):** Uses the browser's Web Speech API.
 
 ### Initial Version (Camera Capture - Replaced)
-- **UI/UX:**
-  - A video element to display the camera feed.
-  - A "Capture" button to take a picture.
-- **Functionality:**
-  - **Camera Access:** The application requested permission to use the user's camera.
-  - **Image Capture:** Clicking the "Capture" button froze a frame from the video feed.
+- Functionality for using the device camera was replaced in favor of file uploads.
 
 ## Current Plan
 
-**Goal:** Modify the application to extract specific words from the uploaded image and repeat them using TTS.
+**Goal:** The application's core logic has been refined to provide a more accurate and useful learning tool based on user feedback.
 
-**Steps:**
-1.  **Update `main.js`:**
-    *   **Improve OCR:**
-        *   Modify `Tesseract.recognize` to process both English and Korean (`eng+kor`) to better handle the provided image content.
-        *   Instead of just getting the full text, process the structured `lines` data from the OCR result.
-    *   **Word Extraction:**
-        *   For each line of text identified by the OCR, extract the first word.
-        *   Filter these words to ensure they are valid English words (e.g., not numbers or Korean characters).
-        *   Display the extracted list of words in the results area.
-    *   **Update TTS Functionality:**
-        *   Modify the "Speak" button's logic.
-        *   When clicked, the app will iterate through the extracted list of words.
-        *   Each word will be spoken 5 times consecutively.
-        *   Implement a fallback to read the entire text if no specific words could be extracted.
+**Last Action:**
+1.  **Updated `main.js`:**
+    *   **Refined Word Extraction:**
+        *   The logic was updated to find the first English word of 3 or more characters per line.
+        *   This avoids capturing OCR errors or single letters.
+        *   Added a de-duplication step for the final word list.
+    *   **TTS Functionality:**
+        *   The logic to repeat each extracted word 5 times has been confirmed and works as intended.
