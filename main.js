@@ -1,4 +1,3 @@
-
 const uploadInput = document.getElementById('upload-input');
 const imagePreview = document.getElementById('image-preview');
 const recognizeBtn = document.getElementById('recognize-btn');
@@ -25,43 +24,41 @@ uploadInput.addEventListener('change', (event) => {
     }
 });
 
-// Recognize text and extract words
+// Recognize text using a structural approach
 recognizeBtn.addEventListener('click', () => {
     if (uploadedImage) {
         textResult.textContent = 'Recognizing...';
         Tesseract.recognize(
             uploadedImage,
-            'eng+kor', // Recognize both English and Korean
+            'eng+kor', // Use both languages for context
             {
                 logger: m => console.log(m)
             }
         ).then(({ data }) => {
             extractedWords = []; // Reset words list
             
-            // Process each line of text recognized by the OCR
+            // Process each recognized line to find isolated English words
             data.lines.forEach(line => {
-                // Split the line into individual words
                 const wordsInLine = line.text.trim().split(/\s+/);
                 
-                // Find the first valid English word (3+ letters) in the line
-                for (const word of wordsInLine) {
-                    // Remove any non-alphabetic characters from the word
-                    const cleanWord = word.replace(/[^a-zA-Z]/g, '');
+                // Check if the line contains exactly one word
+                if (wordsInLine.length === 1) {
+                    const singleWord = wordsInLine[0];
+                    // Clean the word and check if it's a valid English word of 3+ chars
+                    const cleanWord = singleWord.replace(/[^a-zA-Z]/g, '');
                     
-                    if (cleanWord.length >= 3) {
+                    if (cleanWord.length >= 3 && cleanWord === singleWord) {
                         extractedWords.push(cleanWord);
-                        break; // Found the word, move to the next line
                     }
                 }
             });
 
             if (extractedWords.length > 0) {
-                // Remove any duplicate words to ensure a clean list
+                // Remove duplicates for a clean, final list
                 extractedWords = [...new Set(extractedWords)];
                 textResult.textContent = "Extracted Words: \n" + extractedWords.join(', ');
             } else {
-                // If no words were extracted, show the full text as a fallback
-                textResult.textContent = "Could not extract valid words. Full text: \n" + data.text; 
+                textResult.textContent = "Could not find any isolated vocabulary words.";
             }
         });
     }
@@ -95,7 +92,7 @@ speakBtn.addEventListener('click', () => {
 
     } else {
         const text = textResult.textContent;
-        if (text && text !== 'Recognizing...') {
+        if (text && !text.startsWith('Recognizing')) {
             const utterance = new SpeechSynthesisUtterance(text);
             speechSynthesis.speak(utterance);
         }
