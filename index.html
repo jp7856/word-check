@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,9 +9,11 @@
 <body>
     <div class="container">
         <h1>Photo to Speech</h1>
-        <div class="camera-container">
-            <video id="video" autoplay></video>
-            <button id="capture-btn">Capture</button>
+        <div class="upload-container">
+            <input type="file" id="upload-input" accept="image/*">
+            <label for="upload-input" class="upload-label">Upload Image</label>
+            <img id="image-preview" src="#" alt="Image Preview" class="hidden"/>
+            <button id="recognize-btn" class="hidden">Recognize Text</button>
         </div>
         <div class="result-container">
             <h2>Recognized Text:</h2>

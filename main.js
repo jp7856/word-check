@@ -1,46 +1,47 @@
-
-const video = document.getElementById('video');
-const captureBtn = document.getElementById('capture-btn');
+const uploadInput = document.getElementById('upload-input');
+const imagePreview = document.getElementById('image-preview');
+const recognizeBtn = document.getElementById('recognize-btn');
 const textResult = document.getElementById('text-result');
 const speakBtn = document.getElementById('speak-btn');
 
-let capturedImage = null;
+let uploadedImage = null;
 
-// Access camera
-if (navigator.mediaDevices.getUserMedia) {
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(function (stream) {
-            video.srcObject = stream;
-        })
-        .catch(function (error) {
-            console.log("Something went wrong!", error);
+// Handle file upload
+uploadInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            uploadedImage = e.target.result;
+            imagePreview.src = uploadedImage;
+            imagePreview.classList.remove('hidden');
+            recognizeBtn.classList.remove('hidden');
+            textResult.textContent = ''; // Clear previous results
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Recognize text
+recognizeBtn.addEventListener('click', () => {
+    if (uploadedImage) {
+        textResult.textContent = 'Recognizing...';
+        Tesseract.recognize(
+            uploadedImage,
+            'eng',
+            {
+                logger: m => console.log(m)
+            }
+        ).then(({ data: { text } }) => {
+            textResult.textContent = text;
         });
-}
-
-// Capture image
-captureBtn.addEventListener('click', () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const context = canvas.getContext('2d');
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    capturedImage = canvas.toDataURL('image/png');
-
-    Tesseract.recognize(
-        capturedImage,
-        'eng',
-        {
-            logger: m => console.log(m)
-        }
-    ).then(({ data: { text } }) => {
-        textResult.textContent = text;
-    });
+    }
 });
 
 // Speak text
 speakBtn.addEventListener('click', () => {
     const text = textResult.textContent;
-    if (text) {
+    if (text && text !== 'Recognizing...') {
         const utterance = new SpeechSynthesisUtterance(text);
         speechSynthesis.speak(utterance);
     }
