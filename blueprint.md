@@ -31,11 +31,19 @@ This application allows users to **upload a photo**, recognizes English words wi
 
 ## Current Plan
 
-- **Goal:** Modify the application to use file uploads instead of a direct camera feed.
-- **Steps:**
-  1.  **Update `index.html`:** Replace the `<video>` element and capture button with a file input, an image preview element, and a "Recognize" button.
-  2.  **Update `style.css`:** Adjust styles for the new file input and image preview elements.
-  3.  **Update `main.js`:**
-      - Remove camera access logic.
-      - Implement image preview functionality when a user uploads a file.
-      - Modify the recognition logic to work with the uploaded image instead of a video frame.
+**Goal:** Modify the application to extract specific words from the uploaded image and repeat them using TTS.
+
+**Steps:**
+1.  **Update `main.js`:**
+    *   **Improve OCR:**
+        *   Modify `Tesseract.recognize` to process both English and Korean (`eng+kor`) to better handle the provided image content.
+        *   Instead of just getting the full text, process the structured `lines` data from the OCR result.
+    *   **Word Extraction:**
+        *   For each line of text identified by the OCR, extract the first word.
+        *   Filter these words to ensure they are valid English words (e.g., not numbers or Korean characters).
+        *   Display the extracted list of words in the results area.
+    *   **Update TTS Functionality:**
+        *   Modify the "Speak" button's logic.
+        *   When clicked, the app will iterate through the extracted list of words.
+        *   Each word will be spoken 5 times consecutively.
+        *   Implement a fallback to read the entire text if no specific words could be extracted.
