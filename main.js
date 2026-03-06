@@ -1,3 +1,4 @@
+
 const uploadInput = document.getElementById('upload-input');
 const imagePreview = document.getElementById('image-preview');
 const recognizeBtn = document.getElementById('recognize-btn');
@@ -24,41 +25,44 @@ uploadInput.addEventListener('change', (event) => {
     }
 });
 
-// Recognize text using a structural approach
+// Recognize text with preserved order and stricter validation
 recognizeBtn.addEventListener('click', () => {
     if (uploadedImage) {
         textResult.textContent = 'Recognizing...';
         Tesseract.recognize(
             uploadedImage,
-            'eng+kor', // Use both languages for context
+            'eng', // English is sufficient
             {
                 logger: m => console.log(m)
             }
         ).then(({ data }) => {
-            extractedWords = []; // Reset words list
-            
-            // Process each recognized line to find isolated English words
+            const orderedWords = [];
+            const wordSet = new Set(); // To track duplicates efficiently
+
             data.lines.forEach(line => {
-                const wordsInLine = line.text.trim().split(/\s+/);
+                const trimmedText = line.text.trim();
                 
-                // Check if the line contains exactly one word
-                if (wordsInLine.length === 1) {
-                    const singleWord = wordsInLine[0];
-                    // Clean the word and check if it's a valid English word of 3+ chars
-                    const cleanWord = singleWord.replace(/[^a-zA-Z]/g, '');
-                    
-                    if (cleanWord.length >= 3 && cleanWord === singleWord) {
-                        extractedWords.push(cleanWord);
+                // Stricter Rule: The line must contain exactly one word,
+                // and that word must be only alphabetic and 3+ characters long.
+                const match = trimmedText.match(/^[a-zA-Z]{3,}$/);
+                
+                if (match) {
+                    const word = match[0];
+                    // Add the word only if it hasn't been added before
+                    // This preserves the original top-to-bottom order
+                    if (!wordSet.has(word)) {
+                        orderedWords.push(word);
+                        wordSet.add(word);
                     }
                 }
             });
 
+            extractedWords = orderedWords;
+
             if (extractedWords.length > 0) {
-                // Remove duplicates for a clean, final list
-                extractedWords = [...new Set(extractedWords)];
                 textResult.textContent = "Extracted Words: \n" + extractedWords.join(', ');
             } else {
-                textResult.textContent = "Could not find any isolated vocabulary words.";
+                textResult.textContent = "Could not find any valid vocabulary words. Please ensure the image is clear and words are on separate lines.";
             }
         });
     }

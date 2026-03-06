@@ -3,33 +3,31 @@
 
 ## Overview
 
-This application allows users to **upload a photo**, recognizes English words within that picture, and provides Text-to-Speech (TTS) audio for the recognized words.
+This application allows users to **upload a photo**, recognizes English words within that picture in their original order, and provides Text-to-Speech (TTS) audio for the recognized words.
 
 ## Implemented Features
 
-### Version 5 (Structural Word Extraction)
+### Version 6 (Order & Accuracy Enhancement)
 - **UI/UX:** No changes.
 - **Functionality:**
-  - **Context-Aware OCR:** The application now analyzes the structure of the recognized text instead of relying on image regions.
-  - **Single-Word Line Detection:** It iterates through every line detected by the OCR. A word is only considered a target if it appears on a line by itself (i.e., the line contains exactly one valid English word of 3+ characters).
-  - **High-Precision Extraction:** This method accurately isolates words from a vocabulary list while ignoring multi-word sentences, directly addressing user feedback for a more robust solution.
+  - **Strict Word Validation:** Implemented a much stricter rule for word extraction. A word is only extracted if its line contains *exactly one* word, and that word consists *only* of 3 or more alphabetic characters. This prevents punctuation or numbers from being included.
+  - **Order Preservation:** The application now processes OCR results in the order they are detected and uses an order-preserving method to remove duplicates. This ensures the final word list correctly matches the top-to-bottom order from the source image.
 
-### Version 4 (Region-Based OCR - Superseded)
-- This approach was planned but superseded by a more intelligent structural analysis before implementation.
+### Version 5 (Structural Word Extraction)
+- **Functionality:** Analyzed text structure to isolate single-word lines, which was a good step but had ordering and accuracy issues.
 
-### Version 3 (Improved Word Extraction)
-- **Functionality:** Extracted the first valid English word from each line, which had limitations.
+### Version 3 & 4 (Previous Attempts)
+- Earlier versions had less sophisticated extraction logic.
 
 ### Version 2 (File Upload)
 - **UI/UX & Functionality:** File upload, basic OCR, and TTS.
 
 ## Current Plan
 
-**Goal:** The application now uses a sophisticated, structure-based analysis to accurately extract vocabulary words from complex images, marking a significant improvement in precision.
+**Goal:** The application now provides a highly accurate, ordered list of vocabulary words, fully addressing user feedback on extraction quality and sequence.
 
 **Last Action:**
 1.  **Updated `main.js`:**
-    *   The OCR logic was completely refactored.
-    *   It now iterates through `data.lines` provided by Tesseract.
-    *   It checks if a line contains exactly one word that is alphabetic and has a length of 3 or more characters.
-    *   This successfully isolates the vocabulary list from the example sentences on the right.
+    *   The OCR processing logic was significantly refined.
+    *   It now uses a strict regex (`/^[a-zA-Z]{3,}$/`) to ensure only lines containing a single, purely alphabetic word are processed.
+    *   It replaces the default `Set` based de-duplication with a new loop that removes duplicates while preserving the original top-to-bottom order of the words.
