@@ -25,13 +25,13 @@ uploadInput.addEventListener('change', (event) => {
     }
 });
 
-// Recognize text with preserved order and stricter validation
+// Recognize text based on the "one word per line" rule
 recognizeBtn.addEventListener('click', () => {
     if (uploadedImage) {
         textResult.textContent = 'Recognizing...';
         Tesseract.recognize(
             uploadedImage,
-            'eng', // English is sufficient
+            'eng', 
             {
                 logger: m => console.log(m)
             }
@@ -40,19 +40,20 @@ recognizeBtn.addEventListener('click', () => {
             const wordSet = new Set(); // To track duplicates efficiently
 
             data.lines.forEach(line => {
-                const trimmedText = line.text.trim();
-                
-                // Stricter Rule: The line must contain exactly one word,
-                // and that word must be only alphabetic and 3+ characters long.
-                const match = trimmedText.match(/^[a-zA-Z]{3,}$/);
-                
-                if (match) {
-                    const word = match[0];
-                    // Add the word only if it hasn't been added before
-                    // This preserves the original top-to-bottom order
-                    if (!wordSet.has(word)) {
-                        orderedWords.push(word);
-                        wordSet.add(word);
+                const wordsInLine = line.text.trim().split(/\s+/);
+
+                // Rule: Process only if the line contains exactly one word.
+                if (wordsInLine.length === 1) {
+                    // Clean the word of any non-alphabetic characters
+                    const cleanWord = wordsInLine[0].replace(/[^a-zA-Z]/g, '');
+                    
+                    // Rule: The cleaned word must be 3+ characters long.
+                    if (cleanWord.length >= 3) {
+                        // Add the word only if it hasn't been added before to preserve order
+                        if (!wordSet.has(cleanWord)) {
+                            orderedWords.push(cleanWord);
+                            wordSet.add(cleanWord);
+                        }
                     }
                 }
             });
